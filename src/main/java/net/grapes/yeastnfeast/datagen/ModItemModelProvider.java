@@ -76,7 +76,11 @@ public class ModItemModelProvider extends ItemModelProvider {
 
         buttonItem(ModBlocks.MAPLE_BUTTON, ModBlocks.MAPLE_PLANKS);
         fenceItem(ModBlocks.MAPLE_FENCE, ModBlocks.MAPLE_PLANKS);
+        basicItem(ModBlocks.MAPLE_DOOR.asItem());
+        basicItem(ModItems.MAPLE_BOAT.get());
+        basicItem(ModItems.MAPLE_CHEST_BOAT.get());
 
+        basicItem(ModItems.HOMESTEADERS_HANDBOOK.get());
     }
 
     public void buttonItem(DeferredBlock<Block> block, DeferredBlock<Block> baseBlock) {

@@ -3,7 +3,7 @@ package net.grapes.yeastnfeast.recipe;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.grapes.yeastnfeast.block.ModBlocks;
+import net.grapes.yeastnfeast.item.ModItems;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -43,7 +43,7 @@ public class KegRecipe implements Recipe<RecipeWrapper> {
     }
 
     public NonNullList<Ingredient> getIngredients() {
-        return this.ingredients;
+        return ingredients;
     }
 
     public Ingredient getYeastSlot() {
@@ -73,9 +73,8 @@ public class KegRecipe implements Recipe<RecipeWrapper> {
         for (int i = 0; i < 3; i++) {
             if (!inv.getItem(i).isEmpty()) inputsCount++;
         }
-        if (inputsCount != ingredients.size()) {
-            return false;
-        }
+
+        if (inputsCount != ingredients.size()) return false;
 
         boolean[] used = new boolean[3];
         for (Ingredient ingredient : ingredients) {
@@ -90,7 +89,8 @@ public class KegRecipe implements Recipe<RecipeWrapper> {
             if (!found) return false;
         }
 
-        return yeastSlot.test(inv.getItem(4)) && tankardSlot.test(inv.getItem(5));
+        return (yeastSlot.isEmpty() || yeastSlot.test(inv.getItem(4)))
+                && (tankardSlot.isEmpty() || tankardSlot.test(inv.getItem(5)));
     }
 
     @Override
@@ -100,7 +100,7 @@ public class KegRecipe implements Recipe<RecipeWrapper> {
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
-        return width * height >= this.ingredients.size();
+        return width * height >= ingredients.size();
     }
 
     @Override
@@ -115,14 +115,13 @@ public class KegRecipe implements Recipe<RecipeWrapper> {
 
     @Override
     public ItemStack getToastSymbol() {
-        return new ItemStack(ModBlocks.KEG.get().asItem());
+        return new ItemStack(ModItems.KEG.get());
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof KegRecipe other)) return false;
-
         return Float.compare(other.experience, experience) == 0 &&
                 brewTime == other.brewTime &&
                 Objects.equals(ingredients, other.ingredients) &&
@@ -169,13 +168,11 @@ public class KegRecipe implements Recipe<RecipeWrapper> {
             int size = buf.readVarInt();
             NonNullList<Ingredient> ingredients = NonNullList.withSize(size, Ingredient.EMPTY);
             ingredients.replaceAll(i -> Ingredient.CONTENTS_STREAM_CODEC.decode(buf));
-
             Ingredient yeast = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
             Ingredient tankard = Ingredient.CONTENTS_STREAM_CODEC.decode(buf);
             ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
             float experience = buf.readFloat();
             int brewTime = buf.readVarInt();
-
             return new KegRecipe(ingredients, yeast, tankard, result, experience, brewTime);
         }
 
@@ -184,7 +181,6 @@ public class KegRecipe implements Recipe<RecipeWrapper> {
             for (Ingredient i : recipe.ingredients) {
                 Ingredient.CONTENTS_STREAM_CODEC.encode(buf, i);
             }
-
             Ingredient.CONTENTS_STREAM_CODEC.encode(buf, recipe.yeastSlot);
             Ingredient.CONTENTS_STREAM_CODEC.encode(buf, recipe.tankardSlot);
             ItemStack.STREAM_CODEC.encode(buf, recipe.output);

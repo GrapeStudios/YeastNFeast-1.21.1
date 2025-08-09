@@ -161,6 +161,10 @@ public class ModItems {
     public static final DeferredItem<Item> MAPLE_HANGING_SIGN = ITEMS.register("maple_hanging_sign",
             () -> new SignItem(new Item.Properties().stacksTo(16), ModBlocks.MAPLE_HANGING_SIGN.get(), ModBlocks.MAPLE_HANGING_WALL_SIGN.get()));
 
+    // Block Items
+    public static final DeferredItem<Item> KEG = ITEMS.register("keg",
+            () -> new BlockItem(ModBlocks.KEG.get(), new Item.Properties()));
+
     // Addon or Compat Items
     /*public static DeferredItem<Item> CHILLBERRIES_JAM;
     static {
@@ -174,7 +178,7 @@ public class ModItems {
     static {
         if (ModList.get().isLoaded("patchouli")) {
             HOMESTEADERS_HANDBOOK = ITEMS.register("homesteaders_handbook",
-                    () -> new Item(new Item.Properties()));
+                    () -> new GuideBookItem(new Item.Properties()));
         }
     }
 

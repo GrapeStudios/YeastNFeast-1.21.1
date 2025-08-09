@@ -3,6 +3,7 @@ package net.grapes.yeastnfeast.entity.boat;
 import net.grapes.yeastnfeast.block.ModBlocks;
 import net.grapes.yeastnfeast.entity.ModEntities;
 import net.grapes.yeastnfeast.item.ModItems;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -15,12 +16,15 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
 import java.util.function.IntFunction;
 
+@MethodsReturnNonnullByDefault
+@ParametersAreNonnullByDefault
 public class ModBoatEntity extends Boat {
 
-    private static final EntityDataAccessor<Integer> DATA_ID_TYPE = SynchedEntityData.defineId(Boat.class,
+    private static final EntityDataAccessor<Integer> DATA_ID_TYPE = SynchedEntityData.defineId(ModBoatEntity.class,
             EntityDataSerializers.INT);
 
     public ModBoatEntity(EntityType<? extends Boat> pEntityType, Level pLevel) {

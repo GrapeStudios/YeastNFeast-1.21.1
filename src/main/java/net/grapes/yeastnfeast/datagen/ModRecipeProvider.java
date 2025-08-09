@@ -1,13 +1,17 @@
 package net.grapes.yeastnfeast.datagen;
 
+import net.grapes.yeastnfeast.YeastNFeastMod;
 import net.grapes.yeastnfeast.block.ModBlocks;
+import net.grapes.yeastnfeast.datagen.custom.KegRecipeBuilder;
 import net.grapes.yeastnfeast.item.ModItems;
 import net.grapes.yeastnfeast.util.ModTags;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
@@ -313,6 +317,184 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 "yeastnfeast:barley", "barley","yeastnfeast:barley_block", "barley");
         nineBlockStorageRecipes(recipeOutput, RecipeCategory.MISC, ModItems.RYE.get(), RecipeCategory.MISC, ModBlocks.RYE_BLOCK.get(),
                 "yeastnfeast:rye", "rye","yeastnfeast:rye_block", "rye");
+
+        // Mead recipes
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.HONEY_MEAD.get()))
+                .addIngredient(Items.APPLE)
+                .addIngredient(Items.HONEY_BOTTLE)
+                .addIngredient(Items.WHEAT)
+                .yeast(ModItems.YEAST.get())
+                .tankard(ModItems.TANKARD.get())
+                .experience(0.3f)
+                .brewTime(7200)
+                .unlockedByItems("has_tankard", ModItems.TANKARD.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "honey_mead_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.MOLASSES_MEAD.get()))
+                .addIngredient(ModItems.BARLEY.get())
+                .addIngredient(ModItems.MOLASSES.get())
+                .addIngredient(Items.SUGAR_CANE)
+                .yeast(ModItems.YEAST.get())
+                .tankard(ModItems.TANKARD.get())
+                .experience(0.3f)
+                .brewTime(7200)
+                .unlockedByItems("has_tankard", ModItems.TANKARD.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "molasses_mead_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.SOUR_MEAD.get()))
+                .addIngredient(ModItems.ELDERBERRIES.get())
+                .addIngredient(ModItems.LEMON.get())
+                .addIngredient(ModItems.GINGER.get())
+                .yeast(ModItems.YEAST.get())
+                .tankard(ModItems.TANKARD.get())
+                .experience(0.3f)
+                .brewTime(7200)
+                .unlockedByItems("has_tankard", ModItems.TANKARD.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "sour_mead_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.THORNBERRY_MEAD.get()))
+                .addIngredient(ModItems.HAWTHORN_BERRIES.get())
+                .addIngredient(ModItems.ELDERBERRIES.get())
+                .addIngredient(Items.SWEET_BERRIES)
+                .yeast(ModItems.YEAST.get())
+                .tankard(ModItems.TANKARD.get())
+                .experience(0.3f)
+                .brewTime(7200)
+                .unlockedByItems("has_tankard", ModItems.TANKARD.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "thornberry_mead_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.BLOSSOM_MEAD.get()))
+                .addIngredient(ModItems.ROSE_HIPS.get())
+                .addIngredient(ModItems.MAPLE_SYRUP.get())
+                .addIngredient(ModItems.MINT.get())
+                .yeast(ModItems.YEAST.get())
+                .tankard(ModItems.TANKARD.get())
+                .experience(0.3f)
+                .brewTime(7200)
+                .unlockedByItems("has_tankard", ModItems.TANKARD.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "blossom_mead_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.AMBER_MEAD.get()))
+                .addIngredient(ModItems.RYE.get())
+                .addIngredient(ModItems.MAPLE_SYRUP.get())
+                .addIngredient(ModItems.ROSE_HIPS.get())
+                .yeast(ModItems.YEAST.get())
+                .tankard(ModItems.TANKARD.get())
+                .experience(0.3f)
+                .brewTime(7200)
+                .unlockedByItems("has_tankard", ModItems.TANKARD.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "amber_mead_from_keg"));
+
+        // Jam recipes
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.APPLE_JAM.get()))
+                .addIngredient(Items.APPLE)
+                .addIngredient(Items.APPLE)
+                .addIngredient(Items.APPLE)
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "apple_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.GLOW_BERRIES_JAM.get()))
+                .addIngredient(Items.GLOW_BERRIES)
+                .addIngredient(Items.GLOW_BERRIES)
+                .addIngredient(Items.GLOW_BERRIES)
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "glow_berries_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.CHORUS_FRUIT_JAM.get()))
+                .addIngredient(Items.CHORUS_FRUIT)
+                .addIngredient(Items.CHORUS_FRUIT)
+                .addIngredient(Items.CHORUS_FRUIT)
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "chorus_fruit_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.ELDERBERRIES_JAM.get()))
+                .addIngredient(ModItems.ELDERBERRIES.get())
+                .addIngredient(ModItems.ELDERBERRIES.get())
+                .addIngredient(ModItems.ELDERBERRIES.get())
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "elderberries_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.GOLDEN_APPLE_JAM.get()))
+                .addIngredient(Items.GOLDEN_APPLE)
+                .addIngredient(Items.GOLDEN_APPLE)
+                .addIngredient(Items.GOLDEN_APPLE)
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "golden_apple_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.HAWTHORN_BERRIES_JAM.get()))
+                .addIngredient(ModItems.HAWTHORN_BERRIES.get())
+                .addIngredient(ModItems.HAWTHORN_BERRIES.get())
+                .addIngredient(ModItems.HAWTHORN_BERRIES.get())
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "hawthorn_berries_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.LEMON_JAM.get()))
+                .addIngredient(ModItems.LEMON.get())
+                .addIngredient(ModItems.LEMON.get())
+                .addIngredient(ModItems.LEMON.get())
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "lemon_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.ROSE_HIPS_JAM.get()))
+                .addIngredient(ModItems.ROSE_HIPS.get())
+                .addIngredient(ModItems.ROSE_HIPS.get())
+                .addIngredient(ModItems.ROSE_HIPS.get())
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "rose_hips_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.SWEET_BERRIES_JAM.get()))
+                .addIngredient(Items.SWEET_BERRIES)
+                .addIngredient(Items.SWEET_BERRIES)
+                .addIngredient(Items.SWEET_BERRIES)
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "sweet_berries_jam_from_keg"));
+
+        KegRecipeBuilder.kegRecipe(new ItemStack(ModItems.MELON_JAM.get()))
+                .addIngredient(Items.MELON_SLICE)
+                .addIngredient(Items.MELON_SLICE)
+                .addIngredient(Items.MELON_SLICE)
+                .yeast(Items.SUGAR)
+                .tankard(ModItems.JAR.get())
+                .experience(0.3f)
+                .brewTime(3600)
+                .unlockedByItems("has_jar", ModItems.JAR.get())
+                .save(recipeOutput, ResourceLocation.fromNamespaceAndPath(YeastNFeastMod.MODID, "melon_jam_from_keg"));
 
         // Recipes for Wood-related Blocks & Items
         planksFromLog(recipeOutput, ModBlocks.MAPLE_PLANKS.get(), ModTags.Items.MAPLE_LOGS, 4);

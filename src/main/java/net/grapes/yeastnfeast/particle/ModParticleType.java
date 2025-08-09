@@ -17,6 +17,9 @@ public class ModParticleType {
     public static final Supplier<SimpleParticleType> MAPLE_LEAVES = PARTICLE_TYPES.register("maple_leaves",
             () -> new SimpleParticleType(true));
 
+    public static final Supplier<SimpleParticleType> DRIPPING_SYRUP = PARTICLE_TYPES.register("dripping_syrup",
+            () -> new SimpleParticleType(true));
+
     public static void register(IEventBus eventBus) {
         PARTICLE_TYPES.register(eventBus);
     }

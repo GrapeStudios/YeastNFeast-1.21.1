@@ -41,9 +41,9 @@ public class ModBlocks {
 
     // Functional Blocks
     public static final DeferredBlock<Block> TREE_TAP = registerBlock("tree_tap",
-            () -> new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+            () -> new TreeTapBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
     public static final DeferredBlock<Block> KEG = BLOCKS.register("keg",
-            () -> new KegBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BARREL)));
+            () -> new KegBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BARREL).noOcclusion()));
 
     // Storage Blocks
     public static final DeferredBlock<Block> BAG_OF_ELDERBERRIES = registerBlock("bag_of_elderberries",

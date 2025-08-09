@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,63 +48,42 @@ public class KegBlockEntity extends SyncBlockEntity implements MenuProvider {
     public static final int INPUT_SLOT_1 = 0;
     public static final int INPUT_SLOT_2 = 1;
     public static final int INPUT_SLOT_3 = 2;
-    public static final int OUTPUT_SLOT = 3;
-    public static final int YEAST_SLOT = 4;
-    public static final int TANKARD_SLOT = 5;
+    public static final int OUTPUT_SLOT   = 3;
+    public static final int YEAST_SLOT    = 4;
+    public static final int TANKARD_SLOT  = 5;
 
     private final ContainerData data;
-    private int progress = 0;
-    private int maxProgress = 200;
+    private int progress     = 0;
+    private int maxProgress  = 200;
     private final int DEFAULT_MAX_PROGRESS = 200;
+
     @Nullable private Player lastInteractedPlayer;
 
     public KegBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.KEG.get(), pos, state);
+
         this.data = new ContainerData() {
-            @Override
-            public int get(int index) {
+            @Override public int get(int index) {
                 return switch (index) {
-                    case 0 -> KegBlockEntity.this.progress;
-                    case 1 -> KegBlockEntity.this.maxProgress;
+                    case 0 -> progress;
+                    case 1 -> maxProgress;
                     default -> 0;
                 };
             }
-
-            @Override
-            public void set(int index, int value) {
-                switch (index) {
-                    case 0 -> KegBlockEntity.this.progress = value;
-                    case 1 -> KegBlockEntity.this.maxProgress = value;
-                }
+            @Override public void set(int index, int value) {
+                if (index == 0) progress = value;
+                else if (index == 1)     maxProgress = value;
             }
-
-            @Override
-            public int getCount() {
-                return 2;
-            }
+            @Override public int getCount() { return 2; }
         };
-    }
-
-    public void clearContents() {
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            inventory.setStackInSlot(i, ItemStack.EMPTY);
-        }
-    }
-
-    public void drops() {
-        SimpleContainer inv = new SimpleContainer(inventory.getSlots());
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            inv.setItem(i, inventory.getStackInSlot(i));
-        }
-        Containers.dropContents(this.level, this.worldPosition, inv);
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
         if (hasRecipe() && isOutputSlotEmptyOrReceivable()) {
-            increaseCraftingProgress();
+            progress++;
             setChanged(level, pos, state);
 
-            if (hasCraftingFinished()) {
+            if (progress >= maxProgress) {
                 craftItem();
                 resetProgress();
             }
@@ -113,134 +93,124 @@ public class KegBlockEntity extends SyncBlockEntity implements MenuProvider {
     }
 
     private void resetProgress() {
-        this.progress = 0;
-        this.maxProgress = DEFAULT_MAX_PROGRESS;
+        progress    = 0;
+        maxProgress = DEFAULT_MAX_PROGRESS;
     }
 
     private void craftItem() {
-        Level level = this.getLevel();
+        Level level = getLevel();
         if (level == null) return;
 
         RecipeWrapper wrapper = new RecipeWrapper(inventory);
+        Optional<RecipeHolder<KegRecipe>> match =
+                level.getRecipeManager().getRecipeFor(ModRecipes.KEG_TYPE.get(), wrapper, level);
 
-        Optional<RecipeHolder<KegRecipe>> match = level.getRecipeManager()
-                .getRecipeFor(ModRecipes.KEG_TYPE.get(), wrapper, level);
+        match.ifPresent(holder -> {
+            KegRecipe recipe   = holder.value();
+            ItemStack result   = recipe.getResultItem(level.registryAccess());
+            ItemStack current  = inventory.getStackInSlot(OUTPUT_SLOT);
 
-        if (match.isPresent()) {
-            KegRecipe recipe = match.get().value();
-            ItemStack result = recipe.getResultItem(level.registryAccess());
-            ItemStack currentOutput = inventory.getStackInSlot(OUTPUT_SLOT);
+            inventory.setStackInSlot(
+                    OUTPUT_SLOT,
+                    new ItemStack(result.getItem(), current.getCount() + result.getCount())
+            );
 
-            inventory.setStackInSlot(OUTPUT_SLOT, new ItemStack(result.getItem(),
-                    currentOutput.getCount() + result.getCount()));
-
-            for (int i = 0; i < 3; i++) {
-                inventory.extractItem(i, 1, false);
+            boolean[] used = new boolean[3];
+            for (Ingredient ing : recipe.getIngredients()) {
+                for (int i = 0; i < 3; i++) {
+                    if (!used[i] && ing.test(inventory.getStackInSlot(i))) {
+                        inventory.extractItem(i, 1, false);
+                        used[i] = true;
+                        break;
+                    }
+                }
             }
+            if (!recipe.getYeastSlot().isEmpty())   inventory.extractItem(YEAST_SLOT,   1, false);
+            if (!recipe.getTankardSlot().isEmpty()) inventory.extractItem(TANKARD_SLOT, 1, false);
 
-            if (!recipe.getYeastSlot().isEmpty()) {
-                inventory.extractItem(YEAST_SLOT, 1, false);
-            }
-
-            if (!recipe.getTankardSlot().isEmpty()) {
-                inventory.extractItem(TANKARD_SLOT, 1, false);
-            }
-
-            if (lastInteractedPlayer != null) {
+            if (lastInteractedPlayer != null)
                 grantExperience(lastInteractedPlayer, recipe.getExperience());
-            }
 
             setChanged(level, worldPosition, getBlockState());
-        }
+        });
     }
 
-    private void grantExperience(Player player, float experience) {
-        if (experience > 0 && !player.level().isClientSide) {
-            player.giveExperiencePoints((int) experience);
-        }
-    }
+    private boolean hasRecipe() {
+        Level level = getLevel();
+        if (level == null) return false;
 
-    public void setLastInteractedPlayer(Player player) {
-        this.lastInteractedPlayer = player;
-    }
+        RecipeWrapper wrapper = new RecipeWrapper(inventory);
+        Optional<RecipeHolder<KegRecipe>> match =
+                level.getRecipeManager().getRecipeFor(ModRecipes.KEG_TYPE.get(), wrapper, level);
 
-    private boolean hasCraftingFinished() {
-        return this.progress >= this.maxProgress;
-    }
+        if (match.isEmpty()) return false;
 
-    private void increaseCraftingProgress() {
-        progress++;
+        KegRecipe recipe   = match.get().value();
+        ItemStack result   = recipe.getResultItem(level.registryAccess());
+        maxProgress        = recipe.getBrewTime();
+
+        return canInsertItemIntoOutputSlot(result) &&
+                canInsertAmountIntoOutputSlot(result.getCount());
     }
 
     private boolean isOutputSlotEmptyOrReceivable() {
         return inventory.getStackInSlot(OUTPUT_SLOT).isEmpty() ||
-                inventory.getStackInSlot(OUTPUT_SLOT).getCount() < inventory.getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
-    }
-
-    private boolean hasRecipe() {
-        Level level = this.getLevel();
-        if (level == null) return false;
-
-        RecipeWrapper wrapper = new RecipeWrapper(inventory);
-        Optional<RecipeHolder<KegRecipe>> match = level.getRecipeManager()
-                .getRecipeFor(ModRecipes.KEG_TYPE.get(), wrapper, level);
-
-        if (match.isEmpty()) return false;
-
-        KegRecipe recipe = match.get().value();
-        ItemStack result = recipe.getResultItem(level.registryAccess());
-
-        this.maxProgress = recipe.getBrewTime();
-
-        return canInsertAmountIntoOutputSlot(result.getCount()) &&
-                canInsertItemIntoOutputSlot(result);
+                inventory.getStackInSlot(OUTPUT_SLOT).getCount() <
+                        inventory.getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
     }
 
     private boolean canInsertItemIntoOutputSlot(ItemStack output) {
         return inventory.getStackInSlot(OUTPUT_SLOT).isEmpty() ||
-                inventory.getStackInSlot(OUTPUT_SLOT).getItem() == output.getItem();
+                inventory.getStackInSlot(OUTPUT_SLOT).is(output.getItem());
     }
 
     private boolean canInsertAmountIntoOutputSlot(int count) {
-        int maxCount = inventory.getStackInSlot(OUTPUT_SLOT).isEmpty() ? 64 : inventory.getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
-        int currentCount = inventory.getStackInSlot(OUTPUT_SLOT).getCount();
-
-        return maxCount >= currentCount + count;
+        int max = inventory.getStackInSlot(OUTPUT_SLOT).isEmpty()
+                ? 64
+                : inventory.getStackInSlot(OUTPUT_SLOT).getMaxStackSize();
+        return inventory.getStackInSlot(OUTPUT_SLOT).getCount() + count <= max;
     }
 
-    @Override
-    public Component getDisplayName() {
+    private void grantExperience(Player player, float xp) {
+        if (xp > 0 && !player.level().isClientSide())
+            player.giveExperiencePoints((int) xp);
+    }
+
+    @Override public Component getDisplayName() {
         return Component.translatable("block.yeastnfeast.keg");
     }
-
-    @Override
-    public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
-        return new KegMenu(i, inventory, this, this.data);
+    @Override public @Nullable AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+        return new KegMenu(id, inv, this, data);
     }
 
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        tag.put("inventory", inventory.serializeNBT(registries));
-        tag.putInt("keg.progress", progress);
-        tag.putInt("keg.max_progress", maxProgress);
-        super.saveAdditional(tag, registries);
+    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider regs) {
+        tag.put("inventory", inventory.serializeNBT(regs));
+        tag.putInt("keg.progress",      progress);
+        tag.putInt("keg.max_progress",  maxProgress);
+        super.saveAdditional(tag, regs);
     }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        inventory.deserializeNBT(registries, tag.getCompound("inventory"));
-        progress = tag.getInt("keg.progress");
+    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider regs) {
+        super.loadAdditional(tag, regs);
+        inventory.deserializeNBT(regs, tag.getCompound("inventory"));
+        progress    = tag.getInt("keg.progress");
         maxProgress = tag.getInt("keg.max_progress");
     }
-
-    @Override
-    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+    @Override public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
-
-    @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
+    @Override public CompoundTag getUpdateTag(HolderLookup.Provider regs) {
+        return saveWithoutMetadata(regs);
     }
+
+    public void drops() {
+        SimpleContainer tmp = new SimpleContainer(inventory.getSlots());
+        for (int i = 0; i < inventory.getSlots(); i++)
+            tmp.setItem(i, inventory.getStackInSlot(i));
+        Containers.dropContents(level, worldPosition, tmp);
+    }
+    public void clearContents() {
+        for (int i = 0; i < inventory.getSlots(); i++)
+            inventory.setStackInSlot(i, ItemStack.EMPTY);
+    }
+    public void setLastInteractedPlayer(Player p) { lastInteractedPlayer = p; }
 }
